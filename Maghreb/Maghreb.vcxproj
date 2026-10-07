@@ -163,6 +163,9 @@
     <ClInclude Include="include\loader\tile_manager.hpp" />
     <ClInclude Include="include\main\game.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="README.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
