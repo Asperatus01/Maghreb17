@@ -1,5 +1,4 @@
-#ifndef TILE_MANAGER_HPP
-#define TILE_MANAGER_HPP
+#pragma once
 
 #include <SFML/Graphics.hpp>
 
@@ -51,5 +50,3 @@ private:
 	std::vector<std::unique_ptr<Level>> m_levels;
 	std::size_t m_active = 0;
 };
-
-#endif // TILE_MANAGER_HPP

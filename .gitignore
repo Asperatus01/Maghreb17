@@ -27,3 +27,11 @@ CMakeLists.txt.user
 # Пользовательские конфиги
 *.filters
 *.vcxproj.user
+
+# Ассеты (картинки, звуки и т.п.)
+res/
+
+# Временные файлы редактора
+*.tmp
+Thumbs.db
+Desktop.ini
