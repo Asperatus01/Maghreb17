@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include "main/shared_context.hpp"
 #include "main/game.hpp"
 
 int main()
@@ -8,11 +9,13 @@ int main()
 #ifdef _WIN32
 	system("chcp 65001 > nul");
 #endif
+	// 1. Сначала создаём контекст
+	SharedContext context;
 
 	try
 	{
 		// Создаём игру через std::make_unique — это современный стиль C++20
-		auto game = std::make_unique<Game>();
+		auto game = std::make_unique<Game>(context);
 
 		// Запускаем игровой цикл
 		game->run();

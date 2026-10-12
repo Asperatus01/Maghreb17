@@ -16,17 +16,53 @@
     <Filter Include="Исходные файлы\tmxlite">
       <UniqueIdentifier>{0dfcec8c-3d64-4032-b7ac-8931e6d11d4a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\main">
+      <UniqueIdentifier>{3f2e7f8e-cf70-4594-92d7-703297dccbd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\entities">
+      <UniqueIdentifier>{45ed4002-c398-4576-a117-160d9cf7008b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\panels">
+      <UniqueIdentifier>{d48174d8-3fce-4c12-806e-e5440a86ad00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\ai">
+      <UniqueIdentifier>{85a4dddd-ac8a-4962-b5b6-c8a2574f0401}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы заголовков\main">
+      <UniqueIdentifier>{250744db-4b4f-471d-901a-89490360770e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы заголовков\ai">
+      <UniqueIdentifier>{b7330883-fd18-4909-8b4a-b396ad21041d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы заголовков\panels">
+      <UniqueIdentifier>{cb85ad02-4f1b-4a82-b563-f2b75c460ea0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы заголовков\entities">
+      <UniqueIdentifier>{a1aa1f43-c458-49eb-8725-65abcf1097c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы заголовков\sound">
+      <UniqueIdentifier>{9649c7e2-eb56-43d3-bba5-df16cb8920d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы заголовков\States">
+      <UniqueIdentifier>{b3ade1db-b341-4ea1-8997-c14b5fc7ab3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\states">
+      <UniqueIdentifier>{5eb1837c-ade1-4304-8cb8-0e8cebb4e1ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\objects">
+      <UniqueIdentifier>{f1b158f6-9a88-4180-b3fe-a13397c348f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы заголовков\objects">
+      <UniqueIdentifier>{f574e4e2-8009-4de8-b433-d48da17def75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\sound">
+      <UniqueIdentifier>{e1ed27ff-5172-4cc2-aa58-5876d062a303}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы заголовков\loader">
+      <UniqueIdentifier>{3ae6879b-8a50-490d-93fa-6e1dc4412246}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\tile_manager.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="src\game.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="src\main.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="libs\tmxlite\src\FreeFuncs.cpp">
       <Filter>Исходные файлы\tmxlite</Filter>
     </ClCompile>
@@ -63,16 +99,207 @@
     <ClCompile Include="libs\tmxlite\src\detail\pugixml.cpp">
       <Filter>Исходные файлы\tmxlite</Filter>
     </ClCompile>
+    <ClCompile Include="src\collision_checker.cpp">
+      <Filter>Исходные файлы\main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\event_manager.cpp">
+      <Filter>Исходные файлы\main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game.cpp">
+      <Filter>Исходные файлы\main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Исходные файлы\main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tile_manager.cpp">
+      <Filter>Исходные файлы\main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\window.cpp">
+      <Filter>Исходные файлы\main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\player.cpp">
+      <Filter>Исходные файлы\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\asset_setter.cpp">
+      <Filter>Исходные файлы\main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\control_panel.cpp">
+      <Filter>Исходные файлы\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mouse_handler.cpp">
+      <Filter>Исходные файлы\main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\path_finder.cpp">
+      <Filter>Исходные файлы\ai</Filter>
+    </ClCompile>
+    <ClCompile Include="src\inventory.cpp">
+      <Filter>Исходные файлы\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\inventory_panel.cpp">
+      <Filter>Исходные файлы\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="include\entities\player.hpp">
+      <Filter>Файлы заголовков\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="include\main\collision_checker.hpp">
+      <Filter>Файлы заголовков\main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entity.cpp">
+      <Filter>Исходные файлы\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\character.cpp">
+      <Filter>Исходные файлы\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\item_stats.cpp">
+      <Filter>Исходные файлы\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\strite_effect.cpp">
+      <Filter>Исходные файлы\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\equipment.cpp">
+      <Filter>Исходные файлы\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stats_component.cpp">
+      <Filter>Исходные файлы\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\movement_controller.cpp">
+      <Filter>Исходные файлы\ai</Filter>
+    </ClCompile>
+    <ClCompile Include="src\combat_system.cpp">
+      <Filter>Исходные файлы\ai</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ai_controller.cpp">
+      <Filter>Исходные файлы\ai</Filter>
+    </ClCompile>
+    <ClCompile Include="src\loot_system.cpp">
+      <Filter>Исходные файлы\ai</Filter>
+    </ClCompile>
+    <ClCompile Include="src\inventory_component.cpp">
+      <Filter>Исходные файлы\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dialogue_system.cpp">
+      <Filter>Исходные файлы\ai</Filter>
+    </ClCompile>
+    <ClCompile Include="src\enemy.cpp">
+      <Filter>Исходные файлы\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\npc.cpp">
+      <Filter>Исходные файлы\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\panel.cpp">
+      <Filter>Исходные файлы\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="include\panels\panel.hpp">
+      <Filter>Файлы заголовков\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound_player.cpp">
+      <Filter>Исходные файлы\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\music_player.cpp">
+      <Filter>Исходные файлы\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\animator.cpp">
+      <Filter>Исходные файлы\main</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\loader\tile_manager.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="include\main\game.hpp">
-      <Filter>Файлы заголовков</Filter>
+      <Filter>Файлы заголовков\main</Filter>
+    </ClInclude>
+    <ClInclude Include="include\main\shared_context.hpp">
+      <Filter>Файлы заголовков\main</Filter>
+    </ClInclude>
+    <ClInclude Include="include\main\window.hpp">
+      <Filter>Файлы заголовков\main</Filter>
+    </ClInclude>
+    <ClInclude Include="include\main\event_manager.hpp">
+      <Filter>Файлы заголовков\main</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ai\path_finder.hpp">
+      <Filter>Файлы заголовков\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\main\asset_setter.hpp">
+      <Filter>Файлы заголовков\main</Filter>
+    </ClInclude>
+    <ClInclude Include="include\main\mouse_handler.hpp">
+      <Filter>Файлы заголовков\main</Filter>
+    </ClInclude>
+    <ClInclude Include="include\panels\control_panel.hpp">
+      <Filter>Файлы заголовков\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="include\panels\inventory_panel.hpp">
+      <Filter>Файлы заголовков\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="include\panels\inventory.hpp">
+      <Filter>Файлы заголовков\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sound\music_player.hpp">
+      <Filter>Файлы заголовков\sound</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entities\entity.hpp">
+      <Filter>Файлы заголовков\entities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entities\character.hpp">
+      <Filter>Файлы заголовков\entities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\objects\item_stats.hpp">
+      <Filter>Файлы заголовков\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\objects\sprite_effect.hpp">
+      <Filter>Файлы заголовков\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\objects\equipment.hpp">
+      <Filter>Файлы заголовков\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\main\animation_state.hpp">
+      <Filter>Файлы заголовков\main</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entities\stats_component.hpp">
+      <Filter>Файлы заголовков\entities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ai\movement_controller.hpp">
+      <Filter>Файлы заголовков\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ai\direction.hpp">
+      <Filter>Файлы заголовков\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ai\combat_system.hpp">
+      <Filter>Файлы заголовков\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ai\ai_controller.hpp">
+      <Filter>Файлы заголовков\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ai\loot_system.hpp">
+      <Filter>Файлы заголовков\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\panels\inventory_component.hpp">
+      <Filter>Файлы заголовков\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ai\dialogue_system.hpp">
+      <Filter>Файлы заголовков\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entities\enemy.hpp">
+      <Filter>Файлы заголовков\entities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\entities\npc.hpp">
+      <Filter>Файлы заголовков\entities</Filter>
+    </ClInclude>
+    <ClInclude Include="include\main\animator.hpp">
+      <Filter>Файлы заголовков\main</Filter>
+    </ClInclude>
+    <ClInclude Include="include\loader\tile_manager.hpp">
+      <Filter>Файлы заголовков\loader</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sound\sound_player.hpp">
+      <Filter>Файлы заголовков\sound</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\main\collision_checker.inl">
+      <Filter>Файлы заголовков\main</Filter>
+    </None>
   </ItemGroup>
 </Project>
