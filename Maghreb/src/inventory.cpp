@@ -405,7 +405,7 @@ bool Inventory::manageCurrentItems(Entity* entity) {
 bool Inventory::addToCell(Entity* entity, Cell* cell) {
 	if (!entity || !cell) return false;
 
-	// TODO: sf::RenderWindow* window = m_context.m_windPtr->getRenderWindow();
+	// TODO: sf::RenderWindow* window = m_context.m_windowPtr->getRenderWindow();
 	sf::Vector2i mousePos{ 0, 0 };
 	bool leftMousePressed = false;
 
@@ -609,7 +609,7 @@ void Inventory::rearrangeItem(Entity* entity) {
 // =========================================================================
 
 void Inventory::getInfoIP() {
-	// TODO: sf::RenderWindow* window = m_context.m_windPtr->getRenderWindow();
+	// TODO: sf::RenderWindow* window = m_context.m_windowPtr->getRenderWindow();
 	// sf::Vector2f worldTextCoord = window->mapPixelToCoords(
 	//     sf::Vector2i(kScreenWidth / 2, kScreenHeight - 64));
 	// sf::Vector2i mouseScreenPos = sf::Mouse::getPosition(*window);

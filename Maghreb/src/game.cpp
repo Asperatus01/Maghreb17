@@ -1,12 +1,12 @@
-#include <stdexcept>
+п»ї#include <stdexcept>
 #include <iostream>
 #include "main/game.hpp"
 
-// Полные заголовки — здесь, в .cpp, это безопасно.
-// Теперь мы можем спокойно включать всё, что нужно для new/delete.
+// РџРѕР»РЅС‹Рµ Р·Р°РіРѕР»РѕРІРєРё вЂ” Р·РґРµСЃСЊ, РІ .cpp, СЌС‚Рѕ Р±РµР·РѕРїР°СЃРЅРѕ.
+// РўРµРїРµСЂСЊ РјС‹ РјРѕР¶РµРј СЃРїРѕРєРѕР№РЅРѕ РІРєР»СЋС‡Р°С‚СЊ РІСЃС‘, С‡С‚Рѕ РЅСѓР¶РЅРѕ РґР»СЏ new/delete.
 #include "main/window.hpp"
 #include "loader/tile_manager.hpp"
-#include "main/event_manager.hpp"          // Раскомментировал, так как используется
+#include "main/event_manager.hpp"          // Р Р°СЃРєРѕРјРјРµРЅС‚РёСЂРѕРІР°Р», С‚Р°Рє РєР°Рє РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
 #include "main/collision_checker.hpp"
 #include "ai/path_finder.hpp"
 #include "entities/player.hpp"
@@ -14,46 +14,50 @@
 #include "panels/control_panel.hpp"
 #include "main/mouse_handler.hpp"
 #include "sound/music_player.hpp"
-#include "sound/sound_player.hpp"         // Обязательно для new SoundPlayer
-#include "panels/inventory_panel.hpp"    // Обязательно для new InventoryPanel
-#include "panels/inventory.hpp"           // Обязательно для new Inventory
-// #include "main/animation_holder.hpp"   // Если не используется — можно оставить закомментированным
+#include "sound/sound_player.hpp"         // РћР±СЏР·Р°С‚РµР»СЊРЅРѕ РґР»СЏ new SoundPlayer
+#include "panels/inventory_panel.hpp"    // РћР±СЏР·Р°С‚РµР»СЊРЅРѕ РґР»СЏ new InventoryPanel
+#include "panels/inventory.hpp"           // РћР±СЏР·Р°С‚РµР»СЊРЅРѕ РґР»СЏ new Inventory
+#include "main/animation_holder.hpp"   
 
-// Фиксированный шаг времени: ровно 60 FPS
+
+// Р¤РёРєСЃРёСЂРѕРІР°РЅРЅС‹Р№ С€Р°Рі РІСЂРµРјРµРЅРё: СЂРѕРІРЅРѕ 60 FPS
 const sf::Time Game::timePerFrame = sf::seconds(1.f / 60.f);
 
 Game::Game(SharedContext& context)
 	: m_context(context)
 {
-	// --- ИНИЦИАЛИЗАЦИЯ (через new вместо make_unique) ---
+	// --- РРќРР¦РРђР›РР—РђР¦РРЇ (С‡РµСЂРµР· new РІРјРµСЃС‚Рѕ make_unique) ---
 
-	// 1. Создаём Window в куче
-	m_context.m_windPtr = new Window(m_context);
+	// 1. РЎРѕР·РґР°С‘Рј Window РІ РєСѓС‡Рµ
+	m_context.m_windowPtr = new Window(m_context);
+	
 
-	// 2. Получаем невладеющий указатель на внутренний RenderWindow
-	// Важно: убедись, что метод getRenderWindow() возвращает sf::RenderWindow*
-	m_context.m_renderWindowPtr = m_context.m_windPtr->getRenderWindow();
+	// 2. РџРѕР»СѓС‡Р°РµРј РЅРµРІР»Р°РґРµСЋС‰РёР№ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІРЅСѓС‚СЂРµРЅРЅРёР№ RenderWindow
+	// Р’Р°Р¶РЅРѕ: СѓР±РµРґРёСЃСЊ, С‡С‚Рѕ РјРµС‚РѕРґ getRenderWindow() РІРѕР·РІСЂР°С‰Р°РµС‚ sf::RenderWindow*
+	m_context.m_renderWindowPtr = m_context.m_windowPtr->getRenderWindow();
 
-	// 3. Сохраняем для удобного доступа в Game
+	// 3. РЎРѕС…СЂР°РЅСЏРµРј РґР»СЏ СѓРґРѕР±РЅРѕРіРѕ РґРѕСЃС‚СѓРїР° РІ Game
 	m_renderWindow = m_context.m_renderWindowPtr;
 
 	if (!m_renderWindow) {
-		throw std::runtime_error("Не удалось получить RenderWindow из Window");
+		throw std::runtime_error("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ RenderWindow РёР· Window");
 	}
 	else {
 		m_renderWindow->setVerticalSyncEnabled(true);
 	}
 
-	// Инициализация view: размер = размер окна, центр пока по центру окна
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ view: СЂР°Р·РјРµСЂ = СЂР°Р·РјРµСЂ РѕРєРЅР°, С†РµРЅС‚СЂ РїРѕРєР° РїРѕ С†РµРЅС‚СЂСѓ РѕРєРЅР°
 	const auto size = m_renderWindow->getSize();
 	m_view.reset(sf::FloatRect(0.f, 0.f, static_cast<float>(size.x), static_cast<float>(size.y)));
 
 	if (m_renderWindow) {
 		m_renderWindow->setView(m_view);
 	}
+	// РџРµСЂРµРґР°С‘Рј РІРёРґ РІ РєРѕРЅС‚РµРєСЃС‚, РІРёРґРѕРј РІР»Р°РґРµРµС‚ Game
+	m_context.m_view = &m_view;
 
-	// 5. Создаём остальные базовые объекты в куче через new
-	// Порядок важен: сначала независимые, потом зависимые.
+	// 5. РЎРѕР·РґР°С‘Рј РѕСЃС‚Р°Р»СЊРЅС‹Рµ Р±Р°Р·РѕРІС‹Рµ РѕР±СЉРµРєС‚С‹ РІ РєСѓС‡Рµ С‡РµСЂРµР· new
+	// РџРѕСЂСЏРґРѕРє РІР°Р¶РµРЅ: СЃРЅР°С‡Р°Р»Р° РЅРµР·Р°РІРёСЃРёРјС‹Рµ, РїРѕС‚РѕРј Р·Р°РІРёСЃРёРјС‹Рµ.
 	m_context.m_tileManagerPtr = new TileManager();
 	//m_context.m_checkerPtr = new CollisionChecker(context);
 	m_context.m_pathFinderPtr = new PathFinder(context);
@@ -62,25 +66,26 @@ Game::Game(SharedContext& context)
 	m_context.m_musicPlayerPtr = new MusicPlayer();
 	m_context.m_soundPlayerPtr = new SoundPlayer();
 
-	// Объекты, которым может понадобиться инвентарь/панели (создаем после них)
+	// РћР±СЉРµРєС‚С‹, РєРѕС‚РѕСЂС‹Рј РјРѕР¶РµС‚ РїРѕРЅР°РґРѕР±РёС‚СЊСЃСЏ РёРЅРІРµРЅС‚Р°СЂСЊ/РїР°РЅРµР»Рё (СЃРѕР·РґР°РµРј РїРѕСЃР»Рµ РЅРёС…)
 	m_context.m_inventoryPtr = new Inventory(context);
-	//m_context.m_iPanelPtr = new InventoryPanel(context); // Панель зависит от инвентаря
+	//m_context.m_iPanelPtr = new InventoryPanel(context); // РџР°РЅРµР»СЊ Р·Р°РІРёСЃРёС‚ РѕС‚ РёРЅРІРµРЅС‚Р°СЂСЏ
 	m_context.m_controlPanelPtr = new ControlPanel(context);
 	m_context.m_assetSetterPtr = new AssetSetter(context);
+	m_context.m_animHolderPtr = new AnimationHolder();
+	m_context.m_itemAnimHolderPtr = new AnimationHolder(); 
 
-	// «Верхние» объекты
+	// В«Р’РµСЂС…РЅРёРµВ» РѕР±СЉРµРєС‚С‹
 	m_context.m_playerPtr = new Player(context);
 
-	// 6. Запоминаем невладеющие указатели для быстрого доступа внутри Game
+	// 6. Р—Р°РїРѕРјРёРЅР°РµРј РЅРµРІР»Р°РґРµСЋС‰РёРµ СѓРєР°Р·Р°С‚РµР»Рё РґР»СЏ Р±С‹СЃС‚СЂРѕРіРѕ РґРѕСЃС‚СѓРїР° РІРЅСѓС‚СЂРё Game
 	m_tileManager = m_context.m_tileManagerPtr;
-	// m_checker = m_context.m_checkerPtr; 
-	// m_player = m_context.m_playerPtr;
+	
 
-	// Загрузка шрифта
+	// Р—Р°РіСЂСѓР·РєР° С€СЂРёС„С‚Р°
 	m_isFontLoaded = m_font.loadFromFile("res/fonts/arial.ttf");
 
 	if (!m_isFontLoaded) {
-		std::cerr << "[WARNING] Шрифт не загружен — FPS не будет отображаться на экране.\n";
+		std::cerr << "[WARNING] РЁСЂРёС„С‚ РЅРµ Р·Р°РіСЂСѓР¶РµРЅ вЂ” FPS РЅРµ Р±СѓРґРµС‚ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊСЃСЏ РЅР° СЌРєСЂР°РЅРµ.\n";
 	}
 	else {
 		m_fpsText.setFont(m_font);
@@ -91,59 +96,30 @@ Game::Game(SharedContext& context)
 	}
 }
 
-// --- ДЕСТРУКТОР (ОБЯЗАТЕЛЬНО: ручное удаление всех объектов) ---
+// --- Р”Р•РЎРўР РЈРљРўРћР  (РћР‘РЇР—РђРўР•Р›Р¬РќРћ: СЂСѓС‡РЅРѕРµ СѓРґР°Р»РµРЅРёРµ РІСЃРµС… РѕР±СЉРµРєС‚РѕРІ) ---
 Game::~Game() {
-	// ВАЖНО: Порядок удаления должен быть обратным порядку создания,
-	// особенно если объекты имеют зависимости друг от друга.
-
-	delete m_context.m_playerPtr;             // Player может использовать другие системы
-	delete m_context.m_assetSetterPtr;       // AssetSetter может держать ресурсы
+	// Р’РђР–РќРћ: РџРѕСЂСЏРґРѕРє СѓРґР°Р»РµРЅРёСЏ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РѕР±СЂР°С‚РЅС‹Рј РїРѕСЂСЏРґРєСѓ СЃРѕР·РґР°РЅРёСЏ,
+	// РѕСЃРѕР±РµРЅРЅРѕ РµСЃР»Рё РѕР±СЉРµРєС‚С‹ РёРјРµСЋС‚ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РґСЂСѓРі РѕС‚ РґСЂСѓРіР°.
+	delete m_context.m_itemAnimHolderPtr;
+	delete m_context.m_animHolderPtr;
+	delete m_context.m_playerPtr;             // Player РјРѕР¶РµС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РґСЂСѓРіРёРµ СЃРёСЃС‚РµРјС‹
+	delete m_context.m_assetSetterPtr;       // AssetSetter РјРѕР¶РµС‚ РґРµСЂР¶Р°С‚СЊ СЂРµСЃСѓСЂСЃС‹
 	delete m_context.m_controlPanelPtr;      // ControlPanel
-	//delete m_context.m_iPanelPtr;            // InventoryPanel (зависит от Inventory, удаляем ДО него)
+	//delete m_context.m_iPanelPtr;            // InventoryPanel (Р·Р°РІРёСЃРёС‚ РѕС‚ Inventory, СѓРґР°Р»СЏРµРј Р”Рћ РЅРµРіРѕ)
 	delete m_context.m_inventoryPtr;          // Inventory
-
 	delete m_context.m_soundPlayerPtr;       // SoundPlayer
 	delete m_context.m_musicPlayerPtr;       // MusicPlayer
-
 	delete m_context.m_mouseHandlerPtr;
 	delete m_context.m_eventManagerPtr;
-
 	delete m_context.m_pathFinderPtr;
 	//delete m_context.m_checkerPtr;
 	delete m_context.m_tileManagerPtr;
 
 	//delete m_context.m_viewPtr;              // sf::View
-	delete m_context.m_windPtr;              // Window (удалит внутри себя RenderWindow)
+	delete m_context.m_windowPtr;              // Window (СѓРґР°Р»РёС‚ РІРЅСѓС‚СЂРё СЃРµР±СЏ RenderWindow)
 }
 
-void Game::run() {
-	setupGame();
-
-	sf::Clock clock;
-	sf::Time timeSinceLastUpdate = sf::Time::Zero;
-
-	while (m_renderWindow && m_renderWindow->isOpen()) {
-		// --- НАЧАЛО: обработка событий (сюда попадает и крестик) ---
-		sf::Event event;
-		while (m_renderWindow->pollEvent(event)) {
-			if (event.type == sf::Event::Closed) {
-				m_renderWindow->close(); // Это корректно закрывает окно
-			}
-			// Сюда позже можно добавить другие события (Resize, KeyPressed и т.д.)
-		}
-		// --- КОНЕЦ: обработка событий ---
-		processInput();
-
-		timeSinceLastUpdate += clock.restart();
-		while (timeSinceLastUpdate > timePerFrame) {
-			timeSinceLastUpdate -= timePerFrame;
-			update(timePerFrame);
-		}
-
-		draw();
-	}
-}
-
+// РЈСЃС‚Р°РЅРѕРІРєР° РёРіСЂС‹
 void Game::setupGame() {
 	static const char* levels[] = {
 		"res/levels/Maghreb_level_01.tmx",
@@ -151,7 +127,7 @@ void Game::setupGame() {
 
 	for (std::size_t i = 0; i < sizeof(levels) / sizeof(levels[0]); ++i) {
 		if (!m_tileManager->loadLevel(i, levels[i])) {
-			throw std::runtime_error(std::string("Не удалось загрузить уровень: ") + levels[i]);
+			throw std::runtime_error(std::string("РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ СѓСЂРѕРІРµРЅСЊ: ") + levels[i]);
 		}
 	}
 
@@ -167,13 +143,16 @@ void Game::setupGame() {
 	const float mapWidth = static_cast<float>(mapSize.x) * tileSize.x;
 	const float mapHeight = static_cast<float>(mapSize.y) * tileSize.y;
 
-	// Центрируем камеру на карте
+	// Р¦РµРЅС‚СЂРёСЂСѓРµРј РєР°РјРµСЂСѓ РЅР° РєР°СЂС‚Рµ
 	m_view.setCenter(mapWidth * 0.5f, mapHeight * 0.5f);
 	if (m_renderWindow) {
 		m_renderWindow->setView(m_view);
 	}
 
-	// Запускаем методы класса AssetSetter
+	// РЎРѕР·РґР°С‘Рј РёРіСЂРѕРІРѕР№ РєСѓСЂСЃРѕСЂ
+	createCursor("res/cursor/cursorfinger.png");
+	
+	// Р—Р°РїСѓСЃРєР°РµРј РјРµС‚РѕРґС‹ РєР»Р°СЃСЃР° AssetSetter
 	m_context.m_assetSetterPtr->setLandscape();
 	m_context.m_assetSetterPtr->setMonster();
 	m_context.m_assetSetterPtr->setNPC();
@@ -182,9 +161,126 @@ void Game::setupGame() {
 	m_context.m_assetSetterPtr->setInteractiveObjects();
 }
 
-void Game::processInput() {
-	// Логика ввода
+bool Game::createCursor(const std::string& path) {
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєСѓСЂСЃРѕСЂР°-СѓРєР°Р·Р°С‚РµР»СЏ
+	if (!m_cursorImage.loadFromFile(path)) {
+		std::cerr << "Error: Could not load cursor image!" << std::endl;
+		// Р•СЃР»Рё РєР°СЂС‚РёРЅРєРё РЅРµС‚ вЂ” РїСЂРѕСЃС‚Рѕ РЅРµ РІРєР»СЋС‡Р°РµРј РєР°СЃС‚РѕРјРЅС‹Р№ РєСѓСЂСЃРѕСЂ, Р±СѓРґРµС‚ РѕР±С‹С‡РЅР°СЏ СЃС‚СЂРµР»РєР°
+		return m_isCursorSet = false;
+	}
+
+	const std::uint8_t* pixels = m_cursorImage.getPixelsPtr();
+	if (pixels) {
+		// Hotspot: РїРѕРґР±РµСЂРё РїРѕРґ СЃРІРѕР№ РїР°Р»РµС†. (0,0) вЂ” РєР»РёРє РІ Р»РµРІРѕРј РІРµСЂС…РЅРµРј СѓРіР»Сѓ РєР°СЂС‚РёРЅРєРё.
+		// Р§Р°СЃС‚Рѕ РґР»СЏ РїР°Р»СЊС†Р° СЃС‚Р°РІСЏС‚ С‡С‚Рѕ-С‚Рѕ РІСЂРѕРґРµ (12, 24) РёР»Рё (16, 32) вЂ” РїРѕСЌРєСЃРїРµСЂРёРјРµРЅС‚РёСЂСѓР№.
+		m_cursor.loadFromPixels(pixels, m_cursorImage.getSize(), sf::Vector2u(0, 0));
+		return m_isCursorSet = true;
+	}
 }
+
+
+void Game::run() {
+	setupGame();
+	sf::Clock clock;
+	sf::Time timeSinceLastUpdate = sf::Time::Zero;
+
+	while (m_renderWindow && m_renderWindow->isOpen()) {
+		sf::Event event;
+
+		// Р§РёС‚Р°РµРј Р’РЎР• СЃРѕР±С‹С‚РёСЏ, РєРѕС‚РѕСЂС‹Рµ РЅР°РєРѕРїРёР»РёСЃСЊ Р·Р° РєР°РґСЂ
+		while (m_renderWindow->pollEvent(event)) {
+			if (event.type == sf::Event::Closed) {
+				m_renderWindow->close();
+			}
+			else {
+				// РџРµСЂРµРґР°РµРј РєР°Р¶РґРѕРµ СЃРѕР±С‹С‚РёРµ РІ РѕР±СЂР°Р±РѕС‚С‡РёРє
+				processInput(event);
+			}
+		}
+
+		// РЎСЋРґР° РјРѕР¶РЅРѕ РґРѕР±Р°РІРёС‚СЊ РѕР±СЂР°Р±РѕС‚РєСѓ СЃРѕСЃС‚РѕСЏРЅРёСЏ (WASD), РµСЃР»Рё РЅРµ С…РѕС‡РµС€СЊ РґРµР»Р°С‚СЊ РµС‘ РІ update()
+		handleContinuousInput(); 
+
+		timeSinceLastUpdate += clock.restart();
+
+		while (timeSinceLastUpdate > timePerFrame) {
+			timeSinceLastUpdate -= timePerFrame;
+			update(timePerFrame);
+		}
+		draw();
+	}
+}
+
+void Game::processInput(const sf::Event& event) {
+	// 1. РћР±СЂР°Р±РѕС‚РєР° РјРіРЅРѕРІРµРЅРЅС‹С… РґРµР№СЃС‚РІРёР№ (РЅР°Р¶Р°С‚РёСЏ РєР»Р°РІРёС€)
+	if (event.type == sf::Event::KeyPressed) {
+		if (event.key.code == sf::Keyboard::F1) {
+			m_context.toggleDebugMode();
+			return; // РЎСЂР°Р·Сѓ РІС‹С…РѕРґРёРј: РґР»СЏ СЌС‚РѕРіРѕ СЃРѕР±С‹С‚РёСЏ Р±РѕР»СЊС€Рµ РЅРёС‡РµРіРѕ РЅРµ РЅСѓР¶РЅРѕ
+		}
+
+		if (event.key.code == sf::Keyboard::Space) {
+			// Р›РѕРіРёРєР° РїСЂС‹Р¶РєР° РёР»Рё Р±Р»РѕРєР° С‰РёС‚РѕРј (РѕРґРЅРѕ РЅР°Р¶Р°С‚РёРµ)
+			if (m_context.m_playerPtr) {
+				// Р‘Р»РѕРє С‰РёС‚РѕРј
+				//m_context.m_playerPtr->blockWithShield();
+			}
+		}
+		// ... РґСЂСѓРіРёРµ РјРіРЅРѕРІРµРЅРЅС‹Рµ РґРµР№СЃС‚РІРёСЏ (Р°С‚Р°РєР°, РѕС‚РєСЂС‹С‚РёРµ РёРЅРІРµРЅС‚Р°СЂСЏ Рё С‚.Рґ.)
+	}
+
+	// 2. РћР±СЂР°Р±РѕС‚РєР° РјС‹С€Рё (РєР»РёРєРё, СЃРєСЂРѕР»Р»)
+	// РСЃРїРѕР»СЊР·СѓРµРј MouseButtonReleased вЂ” СЌС‚Рѕ Р·Р°С‰РёС‰Р°РµС‚ РѕС‚ В«РґСЂРµР±РµР·РіР°В» Рё РјРЅРѕР¶РµСЃС‚РІРµРЅРЅС‹С… СЃСЂР°Р±Р°С‚С‹РІР°РЅРёР№
+	if (event.type == sf::Event::MouseButtonReleased) {
+		if (event.mouseButton.button == sf::Mouse::Left) {
+			// РџСЂРѕРІРµСЂСЏРµРј, РєР»РёРєРЅСѓР»Рё Р»Рё РјС‹ РїРѕ РєР°РєРѕРјСѓ-С‚Рѕ РёРіСЂРѕРІРѕРјСѓ РѕР±СЉРµРєС‚Сѓ (Р»Р°СЂС†Сѓ Рё С‚.Рї.)
+			bool handled = m_context.m_mouseHandlerPtr->handleLeftClick();
+
+			if (!handled) {
+				// РљР»РёРє РІ РїСѓСЃС‚РѕС‚Сѓ в†’ Р·Р°РїСѓСЃРєР°РµРј РґРІРёР¶РµРЅРёРµ РїРµСЂСЃРѕРЅР°Р¶Р°
+				sf::Vector2f targetPos = m_context.m_mouseHandlerPtr->getMouseWorldPos();
+
+				if (m_context.m_playerPtr) {
+					//m_context.m_playerPtr->setTargetPosition(targetPos);
+
+					// Р›РѕРі РґР»СЏ РѕС‚Р»Р°РґРєРё (РјРѕР¶РЅРѕ СѓР±СЂР°С‚СЊ РІ СЂРµР»РёР·Рµ)
+					std::cerr << "[DEBUG] Left button released, no object hit. Moving player to ("
+						<< targetPos.x << ", " << targetPos.y << ")\n";
+				}
+			}
+			else {
+				// РљР»РёРє РѕР±СЂР°Р±РѕС‚Р°РЅ РѕР±СЉРµРєС‚РѕРј (РЅР°РїСЂРёРјРµСЂ, Р»Р°СЂРµС† РѕС‚РєСЂС‹Р»СЃСЏ)
+				// Р”РІРёР¶РµРЅРёРµ РќР• Р·Р°РїСѓСЃРєР°РµРј.
+				std::cerr << "[DEBUG] Left button released, click handled by game object (no movement)\n";
+			}
+		}
+
+		// РџСЂР°РІР°СЏ РєРЅРѕРїРєР° (РµСЃР»Рё РЅСѓР¶РЅР°)
+		if (event.mouseButton.button == sf::Mouse::Right) {
+			// РќР°РїСЂРёРјРµСЂ, РѕС‚РјРµРЅР° РґРµР№СЃС‚РІРёСЏ РёР»Рё РєРѕРЅС‚РµРєСЃС‚РЅРѕРµ РјРµРЅСЋ
+			// if (m_context.m_playerPtr) m_context.m_playerPtr->cancelAction();
+		}
+	}
+
+	if (event.type == sf::Event::MouseWheelMoved) {
+		// РЎРєСЂРѕР»Р» РёРЅРІРµРЅС‚Р°СЂСЏ РёР»Рё РєР°РјРµСЂС‹
+		// int delta = static_cast<int>(event.mouseWheelMoved.delta);
+		// if (m_context.m_inventoryPtr) m_context.m_inventoryPtr->scroll(delta);
+	}
+}
+
+
+void Game::handleContinuousInput() {
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+		//m_player->move(0, -speed);
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+		//m_player->move(0, speed);
+	}
+	// ... РѕСЃС‚Р°Р»СЊРЅС‹Рµ Р·Р°Р¶Р°С‚С‹Рµ РєР»Р°РІРёС€Рё
+}
+
+
 
 void Game::update(sf::Time const& deltaTime) {
 	const float speed = 400.f;
@@ -198,7 +294,7 @@ void Game::update(sf::Time const& deltaTime) {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 		m_view.move(0.f, speed * deltaTime.asSeconds());
 
-	// Ограничение камеры границами карты
+	// РћРіСЂР°РЅРёС‡РµРЅРёРµ РєР°РјРµСЂС‹ РіСЂР°РЅРёС†Р°РјРё РєР°СЂС‚С‹
 	const float mapWidth = 60.f * 32.f;   // 1920 px
 	const float mapHeight = 60.f * 32.f; // 1920 px
 
@@ -208,45 +304,64 @@ void Game::update(sf::Time const& deltaTime) {
 	float centerX = m_view.getCenter().x;
 	float centerY = m_view.getCenter().y;
 
-	// Левая граница
+	// Р›РµРІР°СЏ РіСЂР°РЅРёС†Р°
 	if (centerX - halfViewW < 0.f)
 		centerX = halfViewW;
-	// Правая граница
+	// РџСЂР°РІР°СЏ РіСЂР°РЅРёС†Р°
 	if (centerX + halfViewW > mapWidth)
 		centerX = mapWidth - halfViewW;
 
-	// Верхняя граница
+	// Р’РµСЂС…РЅСЏСЏ РіСЂР°РЅРёС†Р°
 	if (centerY - halfViewH < 0.f)
 		centerY = halfViewH;
-	// Нижняя граница
+	// РќРёР¶РЅСЏСЏ РіСЂР°РЅРёС†Р°
 	if (centerY + halfViewH > mapHeight)
 		centerY = mapHeight - halfViewH;
 
 	m_view.setCenter(centerX, centerY);
+
+	for (auto& obj : m_context.m_assetSetterPtr->m_obj) {
+		if (obj) {
+			obj->update(deltaTime); // РЎСЋРґР° РїСЂРёС…РѕРґРёС‚ sf::Time, Рё Сѓ ChestLeft РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂР°РІРёР»СЊРЅС‹Р№ override
+		}
+	}
+
 }
+
 
 void Game::draw() {
 	if (!m_renderWindow) return;
 
 	m_renderWindow->clear(sf::Color(30, 30, 30));
 
-	// --- 1. Рисуем мир (карта, игрок и т.д.) с камерой ---
-	// Важно: сначала setView, потом draw мира
+	// --- 1. Р РёСЃСѓРµРј РјРёСЂ (РєР°СЂС‚Р°, РёРіСЂРѕРє Рё С‚.Рґ.) СЃ РєР°РјРµСЂРѕР№ ---
+	// Р’Р°Р¶РЅРѕ: СЃРЅР°С‡Р°Р»Р° setView, РїРѕС‚РѕРј draw РјРёСЂР°
 	m_renderWindow->setView(m_view);
 
 	if (m_tileManager) {
 		m_tileManager->draw(*m_renderWindow);
 	}
+	// !!! Р’РЎРўРђР’РљРђ: РћС‚СЂРёСЃРѕРІРєР° РґРµСЂРµРІСЊРµРІ (Р»Р°РЅРґС€Р°С„С‚Р°) Рё РѕР±СЉРµРєС‚РѕРІ!!!
+	if (m_context.m_assetSetterPtr) {
+		const auto& landscape = m_context.m_assetSetterPtr->m_landscape;
 
+		for (const auto& treePtr : landscape) {
+			treePtr->draw(*m_renderWindow);
+		}
+		const auto& obj = m_context.m_assetSetterPtr->m_obj;
+		for (const auto& objPtr : obj)
+			objPtr->draw(*m_renderWindow);
+	}
+	// !!! РљРћРќР•Р¦ Р’РЎРўРђР’РљР !!!
 	if (m_context.m_playerPtr) {
 		m_context.m_playerPtr->draw(*m_renderWindow);
 	}
-	// Сюда позже вернёшь визуализацию коллизий, если нужно
+	// РЎСЋРґР° РїРѕР·Р¶Рµ РІРµСЂРЅС‘С€СЊ РІРёР·СѓР°Р»РёР·Р°С†РёСЋ РєРѕР»Р»РёР·РёР№, РµСЃР»Рё РЅСѓР¶РЅРѕ
 
-	// --- 2. Возвращаем стандартный view для UI (FPS, панель и т.п.) ---
+	// --- 2. Р’РѕР·РІСЂР°С‰Р°РµРј СЃС‚Р°РЅРґР°СЂС‚РЅС‹Р№ view РґР»СЏ UI (FPS, РїР°РЅРµР»СЊ Рё С‚.Рї.) ---
 	m_renderWindow->setView(m_renderWindow->getDefaultView());
 
-	// --- Блок расчёта и отрисовки FPS ---
+	// --- Р‘Р»РѕРє СЂР°СЃС‡С‘С‚Р° Рё РѕС‚СЂРёСЃРѕРІРєРё FPS ---
 	m_frameCount++;
 	const float elapsed = m_fpsClock.getElapsedTime().asSeconds();
 	if (elapsed >= 1.0f) {
@@ -256,16 +371,16 @@ void Game::draw() {
 	}
 
 	if (m_isFontLoaded) {
-		// Теперь эти координаты — экранные (пиксели окна), а не мировые
+		// РўРµРїРµСЂСЊ СЌС‚Рё РєРѕРѕСЂРґРёРЅР°С‚С‹ вЂ” СЌРєСЂР°РЅРЅС‹Рµ (РїРёРєСЃРµР»Рё РѕРєРЅР°), Р° РЅРµ РјРёСЂРѕРІС‹Рµ
 		m_fpsText.setPosition(10.f, 10.f);
 		m_fpsText.setString("FPS: " + std::to_string(static_cast<int>(m_currentFps)));
 		m_renderWindow->draw(m_fpsText);
 	}
 
-	// Сюда можно добавить отрисовку ControlPanel и других UI-элементов
-	/*if (m_context.m_controlPanelPtr) {
-		m_context.m_controlPanelPtr->draw(*m_renderWindow);
-	}*/
+	// РЈСЃС‚Р°РЅРѕРІРєР° РєСѓСЂСЃРѕСЂР°
+	if (m_isCursorSet) {
+		m_renderWindow->setMouseCursor(m_cursor);
+	}
 
 	m_renderWindow->display();
 }

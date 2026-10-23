@@ -48,7 +48,10 @@ public:
 
 	// Жизненный цикл
 	void update(sf::Time dt) override;
-	void draw(sf::RenderTarget& target) override;
+	void draw(sf::RenderTarget& target) const override;
+
+	// Экипировка
+	void equipItem(Entity* item);
 
 private:
 	// Компоненты

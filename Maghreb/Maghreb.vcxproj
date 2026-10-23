@@ -79,6 +79,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)SFML-2.6.1\include;$(ProjectDir)include;$(ProjectDir)libs\tmxlite\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS; %(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -95,6 +96,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)SFML-2.6.1\include;$(ProjectDir)include;$(ProjectDir)libs\tmxlite\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS; %(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -113,6 +115,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)SFML-2.6.1\include;$(ProjectDir)include;$(ProjectDir)libs\tmxlite\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS; %(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,7 +123,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(ProjectDir)SFML-2.6.1\lib; %(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-system.lib;sfml-audio.lib;sfml-network.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>LinkVerbose</ShowProgress>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -133,6 +140,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)SFML-2.6.1\include;$(ProjectDir)include;$(ProjectDir)libs\tmxlite\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS; %(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,12 +148,13 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(ProjectDir)SFML-2.6.1\lib; %(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-system.lib;sfml-audio.lib;sfml-network.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>LinkVerbose</ShowProgress>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="include\entities\player.hpp" />
-    <ClCompile Include="include\main\collision_checker.hpp" />
-    <ClCompile Include="include\panels\panel.hpp" />
     <ClCompile Include="libs\tmxlite\src\detail\pugixml.cpp" />
     <ClCompile Include="libs\tmxlite\src\FreeFuncs.cpp" />
     <ClCompile Include="libs\tmxlite\src\ImageLayer.cpp" />
@@ -159,10 +168,17 @@
     <ClCompile Include="libs\tmxlite\src\TileLayer.cpp" />
     <ClCompile Include="libs\tmxlite\src\Tileset.cpp" />
     <ClCompile Include="src\ai_controller.cpp" />
+    <ClCompile Include="src\animation_holder.cpp" />
     <ClCompile Include="src\animator.cpp" />
+    <ClCompile Include="src\asset_manager.cpp" />
     <ClCompile Include="src\asset_setter.cpp" />
+    <ClCompile Include="src\bow.cpp" />
+    <ClCompile Include="src\broken_column.cpp" />
     <ClCompile Include="src\character.cpp" />
+    <ClCompile Include="src\chest_left.cpp" />
+    <ClCompile Include="src\chest_right.cpp" />
     <ClCompile Include="src\collision_checker.cpp" />
+    <ClCompile Include="src\column.cpp" />
     <ClCompile Include="src\combat_system.cpp" />
     <ClCompile Include="src\control_panel.cpp" />
     <ClCompile Include="src\dialogue_system.cpp" />
@@ -171,10 +187,12 @@
     <ClCompile Include="src\equipment.cpp" />
     <ClCompile Include="src\event_manager.cpp" />
     <ClCompile Include="src\game.cpp" />
+    <ClCompile Include="src\hunter_bow.cpp" />
     <ClCompile Include="src\inventory.cpp" />
     <ClCompile Include="src\inventory_component.cpp" />
     <ClCompile Include="src\inventory_panel.cpp" />
     <ClCompile Include="src\item_stats.cpp" />
+    <ClCompile Include="src\landscape.cpp" />
     <ClCompile Include="src\loot_system.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mouse_handler.cpp" />
@@ -186,7 +204,7 @@
     <ClCompile Include="src\player.cpp" />
     <ClCompile Include="src\sound_player.cpp" />
     <ClCompile Include="src\stats_component.cpp" />
-    <ClCompile Include="src\strite_effect.cpp" />
+    <ClCompile Include="src\sprite_effect.cpp" />
     <ClCompile Include="src\tile_manager.cpp" />
     <ClCompile Include="src\window.cpp" />
   </ItemGroup>
@@ -204,16 +222,25 @@
     <ClInclude Include="include\entities\npc.hpp" />
     <ClInclude Include="include\entities\stats_component.hpp" />
     <ClInclude Include="include\loader\tile_manager.hpp" />
+    <ClInclude Include="include\main\animation_holder.hpp" />
     <ClInclude Include="include\main\animation_state.hpp" />
     <ClInclude Include="include\main\animator.hpp" />
+    <ClInclude Include="include\main\asset_manager.hpp" />
     <ClInclude Include="include\main\asset_setter.hpp" />
     <ClInclude Include="include\main\event_manager.hpp" />
     <ClInclude Include="include\main\game.hpp" />
     <ClInclude Include="include\main\mouse_handler.hpp" />
     <ClInclude Include="include\main\shared_context.hpp" />
     <ClInclude Include="include\main\window.hpp" />
+    <ClInclude Include="include\objects\bow.hpp" />
+    <ClInclude Include="include\objects\broken_column.hpp" />
+    <ClInclude Include="include\objects\chest_left.hpp" />
+    <ClInclude Include="include\objects\chest_right.hpp" />
+    <ClInclude Include="include\objects\column.hpp" />
     <ClInclude Include="include\objects\equipment.hpp" />
+    <ClInclude Include="include\objects\hunter_bow.hpp" />
     <ClInclude Include="include\objects\item_stats.hpp" />
+    <ClInclude Include="include\objects\landscape.hpp" />
     <ClInclude Include="include\objects\sprite_effect.hpp" />
     <ClInclude Include="include\panels\control_panel.hpp" />
     <ClInclude Include="include\panels\inventory.hpp" />
@@ -221,6 +248,7 @@
     <ClInclude Include="include\panels\inventory_panel.hpp" />
     <ClInclude Include="include\sound\music_player.hpp" />
     <ClInclude Include="include\sound\sound_player.hpp" />
+    <ClInclude Include="include\utils\utils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.md" />

@@ -15,8 +15,8 @@ void NPC::update(sf::Time /*dt*/) {
 	// Заглушка: NPC стоят на месте или ходят по маршрутам
 }
 
-void NPC::draw(sf::RenderTarget& /*target*/) {
-	// Заглушка
+void NPC::draw(sf::RenderTarget& target) const {
+	Character::draw(target);
 }
 
 void NPC::interact() {

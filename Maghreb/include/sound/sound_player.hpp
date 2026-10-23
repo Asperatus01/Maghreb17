@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 
+class AssetManager;
+
 enum class SoundEffect {
 	walk1,
 	bfire,

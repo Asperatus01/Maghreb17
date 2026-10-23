@@ -4,6 +4,8 @@
 #include <optional>
 #include "main/shared_context.hpp"
 #include "objects/item_stats.hpp"
+#include "main/animation_holder.hpp"
+#include "sound/sound_player.hpp"
 
 enum class EntityType {
 	type_unknown,
@@ -55,9 +57,15 @@ public:
 		// но пока оставим только wstring-версию для простоты.
 		m_name = std::wstring(nameUtf8.begin(), nameUtf8.end());
 	}
-
+	   
 	sf::Vector2f getPosition() const { return m_position; }
-	void setPosition(const sf::Vector2f& pos) {	m_position = pos; }
+
+	// ВАЖНО: virtual здесь обязателен!
+	virtual void setPosition(const sf::Vector2f& pos) { m_position = pos; };
+
+	// Если у тебя есть перегрузка с float x, y — тоже сделай её virtual
+	virtual void setPosition(float x, float y) { m_position = { x, y }; };
+
 
 	sf::FloatRect getSolidArea() const { return m_solidArea;	}
 	void setSolidArea(const sf::FloatRect& area) {	m_solidArea = area;	}
@@ -67,6 +75,9 @@ public:
 
 	EntityType getType() const { return m_type;	}
 	void setType(EntityType type) {	m_type = type; }
+
+	/*EntityType getType() const { return m_type; }
+	const wchar_t* getName() const { return m_name.c_str(); }*/
 
 	bool getCollision() const {	return m_collision;	}
 	void setCollision(bool collision) {	m_collision = collision; }
@@ -88,19 +99,72 @@ public:
 	void setDressed(bool value) { m_dressed = value; }
 	bool isDressed() const { return m_dressed; }
 
-	void setTwoHandedWeapon(bool value) { m_two_handed_weapon = value; }
-	bool isTwoHandedWeapon() const { return m_two_handed_weapon; }
+	void setTwoHandedWeapon(bool value) { m_twoHandedWeapon = value; }
+	bool isTwoHandedWeapon() const { return m_twoHandedWeapon; }
 
 	void setShowItem(bool value) { m_showItem = value; }
 	bool isShowItem() const { return m_showItem; }
 
 	void setOpened(bool value) { m_opened = value; }
 	bool isOpened() const { return m_opened; }
+		
+	virtual void activateAnimation(const std::string& name);
+	virtual AnimationHolder* getAnimatorHolder() const;
+	
+	// НОВЫЙ МЕТОД: помощник для проигрывания звука
+	void playSound(const std::string& path) {
+		if (m_context.m_soundPlayerPtr) {
+			m_context.m_soundPlayerPtr->play(path);
+		}
+	}
+
+	// Проверка попадания: точка в хитбоксе?
+	// const — потому что проверка не должна менять состояние
+	virtual bool contains(const sf::Vector2f& pos) const { return false; };
+
+	// Реакция на клик: тут можно менять состояние (флаг clicked, прочность и т.п.)
+	virtual void onMouseClick(const sf::Vector2f& pos) {};
+
+	void getSprite(
+		const sf::Texture& texture,
+		unsigned int frameCol,
+		unsigned int frameRow,
+		sf::Sprite& outFirstFrame,
+		sf::Sprite& outSecondFrame,
+		sf::Sprite& outLastFrame
+	);
+
+	void getAnimation(
+		const std::string& texturePath,
+		unsigned int frameCol,
+		unsigned int frameRow,
+		std::vector<sf::Sprite>& outSpriteVect);
+
+	void setAnimationPointers(
+		const sf::Sprite* firstFrame,
+		const sf::Sprite* secondFrame,
+		const sf::Sprite* lastFrame,
+		const sf::Sprite* strokeSprite,
+		const sf::Sprite* redSprite,
+		const sf::Sprite* primarySprite
+	);
+
+	void setAnimationPointers(const sf::Sprite* staticSprite);
 
 	virtual void update(sf::Time dt);
-	virtual void draw(sf::RenderTarget& target);
+	virtual void draw(sf::RenderTarget& target) const;
 	virtual void interact();
 	virtual void use();
+
+	// Animation
+    // ВСЕ указатели — на const sf::Sprite. Это правильно.
+	const sf::Sprite* m_strokeSpritePtr = nullptr;
+	const sf::Sprite* m_lastFramePtr = nullptr;
+	const sf::Sprite* m_outputSpritePtr = nullptr;
+	const sf::Sprite* m_primarySpritePtr = nullptr;
+	const sf::Sprite* m_redSpritePtr = nullptr;
+	const sf::Sprite* m_firstFramePtr = nullptr;
+	const sf::Sprite* m_secondFramePtr = nullptr;
 
 protected:
 	SharedContext& m_context;      // указатель вместо ссылки
@@ -108,17 +172,32 @@ protected:
 	sf::FloatRect m_solidArea;
 	sf::FloatRect m_solidAreaDefault;
 	EntityType m_type = EntityType::type_unknown;
+	
+    sf::FloatRect m_boundingBox; // Рамка ограничивающая спрайт
+    bool m_outline = false;      // Мышь навели на предмет
+	
+	bool m_inInventory = false;             // Предмет находится в инвентаре
+	bool m_dressed = false;                 // Предмет экипировки надет 
+	bool m_showItem = false;                // Показываем объект, например выпрыгивание из сундука
+	bool m_twoHandedWeapon = false;       // Двуручное оружие
+	bool m_opened = false;                  // Открытие сундука
+	bool m_collision = true;                // Произошло столкновение
 
-	bool m_inInventory = false;
-	bool m_dressed = false;
-	bool m_showItem = false;
-	bool m_two_handed_weapon = false;
-	bool m_opened = false;
-	bool m_collision = true;                // <-- добавлено
-
-private:
-	std::optional<ItemStats>  m_itemStats;
+	// Дополнительные флаги
+	bool m_alive;             // эффект смерти монстра или целостнотности объекта
+	bool m_dying;             // процесс умирания объекта или монстра
+	bool m_canPlay;
+	bool m_destroy;           // Флаг устанавливается если игрок рубит дерево
+	bool m_destroyed;         // уничтоженный объект
+	bool m_deceased;          // умерший
+	bool m_shootArrow;
+	bool m_shootMagic;
+	//bool m_imageItemUploaded;   // Флаг, обозначающий, что вместо указателя мыши загружено изображение предмета
+	bool m_showParticles;       // Включаем анимацию брызг крови при рубке деревьев
+	
 
 	// Имя = уникальный идентификатор (из CSV)
 	std::wstring m_name;
+private:
+	std::optional<ItemStats>  m_itemStats;  // Экземпляр класса данных инвентаря
 };

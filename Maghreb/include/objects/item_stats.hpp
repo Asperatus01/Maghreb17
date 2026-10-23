@@ -11,6 +11,7 @@ struct ItemStats {
 		, m_durability(0), m_maxDurability(0)
 		, m_neededCells(1)
 		, m_attackSpeed(0), m_useCost(0)
+		, m_knockBackPower(0)
 		, m_price(0), m_group(0)
 		, m_width(1), m_height(1)
 		, m_restoresHealth(0), m_restoresMana(0)
@@ -31,6 +32,7 @@ struct ItemStats {
 	int m_defenseValue;
 	int m_attackSpeed;
 	int m_useCost;
+	int m_knockBackPower;
 
 	// Требования
 	int m_needStrength;

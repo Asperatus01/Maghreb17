@@ -1,9 +1,7 @@
 #include "sound/sound_player.hpp"
+#include "main/asset_manager.hpp"
 #include <algorithm>
 #include <iostream>
-
-// Forward declaration: этот класс должен быть реализован отдельно
-class AssetManager;
 
 static const sf::SoundBuffer* getSoundBufferStub(const std::string&) {
 	static sf::SoundBuffer dummy;
@@ -11,16 +9,16 @@ static const sf::SoundBuffer* getSoundBufferStub(const std::string&) {
 }
 
 const sf::SoundBuffer* getAssetBuffer(const std::string& path) {
-	// TODO: заменить на реальный вызов AssetManager::GetSoundBuffer(path)
-	// return AssetManager::GetSoundBuffer(path);
-	return getSoundBufferStub(path);
+	static const sf::SoundBuffer& buffer = AssetManager::getSoundBuffer(path);
+	return &buffer;
 }
 
+
 SoundPlayer::SoundPlayer() {
-	m_soundBuffers[SoundEffect::walk1] = getAssetBuffer("Resources/Sound/player/walk1.wav");
-	m_soundBuffers[SoundEffect::bfire] = getAssetBuffer("Resources/Sound/player/bfire.wav");
-	m_soundBuffers[SoundEffect::damage_player] = getAssetBuffer("Resources/Sound/player/damage_player.wav");
-	m_soundBuffers[SoundEffect::bhit1] = getAssetBuffer("Resources/Sound/player/bhit1.wav");
+	m_soundBuffers[SoundEffect::walk1] = getAssetBuffer("res/sound/player/walk1.wav");
+	m_soundBuffers[SoundEffect::bfire] = getAssetBuffer("res/sound/player/bfire.wav");
+	m_soundBuffers[SoundEffect::damage_player] = getAssetBuffer("res/sound/player/damage_player.wav");
+	m_soundBuffers[SoundEffect::bhit1] = getAssetBuffer("res/sound/player/bhit1.wav");
 }
 
 void SoundPlayer::play(SoundEffect effect) {

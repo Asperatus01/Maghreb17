@@ -1,103 +1,120 @@
-#include "main/mouse_handler.hpp"
+﻿#include "main/mouse_handler.hpp"
+#include "main/asset_setter.hpp"
+#include "main/shared_context.hpp"
+#include "main/window.hpp"
+#include "entities/entity.hpp"
 #include <iostream>
-
-static constexpr int kTileSize = 32;
 
 MouseHandler::MouseHandler(SharedContext& context)
 	: m_context(context)
 {
-	std::cerr << "[Stub] MouseHandler created\n";
+	std::cerr << "[INFO] MouseHandler created\n";
 }
 
 MouseHandler::~MouseHandler() {
-	std::cerr << "[Stub] MouseHandler destroyed\n";
-	// TODO: evMgr->removeCallback(StateType::Game, "Left_Pressed")
-	// TODO: evMgr->removeCallback(StateType::Game, "Right_Pressed")
+	std::cerr << "[INFO] MouseHandler destroyed\n";
 }
 
-void MouseHandler::onCreate() {
-	std::cerr << "[Stub] MouseHandler::onCreate\n";
-	// TODO: ����������� �������� ����� EventManager
-	// evMgr->addCallback(StateType::Game, "Left_Pressed", &MouseHandler::actionLeftButton, this);
-	// evMgr->addCallback(StateType::Game, "Right_Pressed", &MouseHandler::actionRightButton, this);
+// Просто берём позицию мыши относительно экрана (работает всегда)
+sf::Vector2i MouseHandler::getPixelPos() const {
+	return sf::Mouse::getPosition(*m_context.m_renderWindowPtr);
 }
 
-void MouseHandler::actionLeftButton(EventDetails* /*details*/) {
-	m_leftMousePressed = true;
-	// TODO: ������ ������ ������ �����
-	// 1. �������� �������� ����������
-	// 2. ��������� � �������
-	// 3. ��������� clickingPanels()
-	// 4. ������� getSelectedEntity()
-	// 5. ���������� ������ ���� ������
-	// 6. ��������� ������� ��������� / ����� / ��������
+// Переводим экранные пиксели в координаты игрового мира через камеру
+sf::Vector2f MouseHandler::pixelToWorld(const sf::Vector2i& mousePos) const {
+	if (!m_context.m_windowPtr) {
+		std::cerr << "[WARNING] MouseHandler::pixelToWorld called without valid window. Using raw pixel coords.\n";
+		return { static_cast<float>(mousePos.x), static_cast<float>(mousePos.y) };
+	}
+
+	const sf::View& view = *m_context.m_view;
+	// mapPixelToCoords уже учитывает вид, который установлен на окне
+	return m_context.m_windowPtr->getRenderWindow()->mapPixelToCoords(mousePos, view);
+
 }
 
-void MouseHandler::actionRightButton(EventDetails* /*details*/) {
-	std::cerr << "[Stub] Right mouse button pressed\n";
-	// TODO: ������ ������� �����
+// Удобная обертка: сразу получить мировые координаты курсора
+sf::Vector2f MouseHandler::getMouseWorldPos() const {
+	return pixelToWorld(getPixelPos());
 }
 
-int MouseHandler::getSelectedEntity() {
-	int i;
-	if ((i = scanningNpc()) != 999)            return i;
-	else if ((i = scanningObjects()) != 999)    return i;
-	else if ((i = scanningInteractiveTile()) != 999) return i;
-	else if ((i = scanningMonsters()) != 999)   return i;
-	else return 999;
+
+// Сканируем объекты (ларцы) и вызываем реакцию у того, по которому кликнули
+/// Проверяет, по какому объекту был клик, и вызывает его реакцию.
+/// Возвращает индекс объекта в m_obj, если клик попал в объект, или -1, если нет.
+/// Важно: порядок объектов должен совпадать с порядком отрисовки (снизу → вверх).
+
+/// worldPos - мировые координаты щелчка мыши
+int MouseHandler::checkClickOnObjects(const sf::Vector2f& worldPos) {
+	if (!m_context.m_assetSetterPtr) {
+		return -1;
+	}
+
+	const auto& objects = m_context.m_assetSetterPtr->m_obj;
+
+	for (size_t i = 0; i < objects.size(); ++i) {
+		const auto& obj = objects[i];
+		if (!obj) continue; // Защита от nullptr в unique_ptr
+		// Проверяем попадание в хитбокс
+		if (obj->contains(worldPos)) {
+			obj->onMouseClick(worldPos); // Вызываем реакцию объекта
+			return static_cast<int>(i);
+		}
+	}
+
+	return -1;
 }
 
-int MouseHandler::scanningMonsters() {
-	if (m_leftMousePressed) return scanningMonstersLeft();
-	else return scanningMonstersRight();
-}
+//// Главная функция обработки левого клика
+//bool MouseHandler::handleLeftClick() {
+//	auto worldPos = getMouseWorldPos();
+//	int objIndex = checkClickOnObjects(worldPos);
+//
+//	if (objIndex != -1) {
+//		// Клик был по объекту: onMouseClick уже сработал внутри scanningObjects
+//		return true; // Клик «съеден» игровым объектом
+//	}
+//
+//	// Клик мимо объектов
+//	return false;
+//}
 
-int MouseHandler::scanningInteractiveTile() {
-	// TODO: ������������ m_context.m_aSetterPtr->m_iObjects
-	// ��������� m_destroy = true ��� ��������� �����
-	return 999;
-}
+bool MouseHandler::handleLeftClick() {
+	// Получем экранные координаты щелчка мыши
+	sf::Vector2i const mouseScreenPos = getPixelPos();
+	// 1. Получаем мировые координаты курсора (это критично!)
+	//sf::Vector2f mouseWorldPos = pixelToWorld(mouseScreenPos);
 
-int MouseHandler::scanningMonstersLeft() {
-	// TODO: ������������ m_context.m_aSetterPtr->m_monsters
-	// ��������� m_attacking = true ��� ��������� �����
-	return 999;
-}
+	// 2. ПОЛУЧАЕМ МИР ЧЕРЕЗ ТВОЮ ФУНКЦИЮ (это единственный правильный путь)
+	sf::Vector2f mouseWorldPos = getMouseWorldPos();
 
-int MouseHandler::scanningMonstersRight() {
-	return 999;
-}
+	std::cerr << "[MOUSE] Left click at screen: " << mouseScreenPos.x << ", " << mouseScreenPos.y << "\n";
+	std::cerr << "[MOUSE] World pos: " << mouseWorldPos.x << ", " << mouseWorldPos.y << "\n";
 
-int MouseHandler::scanningNpc() {
-	// TODO: ������������ m_context.m_aSetterPtr->m_npc
-	return 999;
-}
+	// 2. Проверяем именно тот вектор, где лежат ларцы (скорее всего m_obj)
+	const auto& objects = m_context.m_assetSetterPtr->m_obj;
+	std::cerr << "[MOUSE] Checking " << objects.size() << " objects in m_obj\n";
 
-int MouseHandler::scanningObjects() {
-	// TODO: ������������ m_context.m_aSetterPtr->m_obj
-	// ��������� m_pickUp = true ��� ��������� �����
-	return 999;
-}
+	int hitCount = 0;
+	for (size_t i = 0; i < objects.size(); ++i) {
+		const auto& obj = objects[i];
+		if (!obj) continue;
 
-bool MouseHandler::getSolidTile() {
-	// TODO: �������� ����� ��� �������� ����� TileManager
-	// return false ���� ���� ��������, true ���� ����������
+		bool isHit = obj->contains(mouseWorldPos);
+		if (isHit) {
+			std::cerr << "[MOUSE] HIT #" << i << " type=" << static_cast<int>(obj->getType())
+				<< " name=" << obj->getName().c_str() << "\n";
+			obj->onMouseClick(mouseWorldPos);
+			++hitCount;
+			// Если хочешь обрабатывать только первый попавшийся — раскомментируй return true;
+			// return true; 
+		}
+	}
+
+	if (hitCount == 0) {
+		std::cerr << "[MOUSE] No object hit in m_obj.\n";
+		return false;
+	}
 	return true;
 }
 
-sf::Vector2i MouseHandler::getPixelPos() const {
-	// TODO: return m_context.m_eventManagerPtr->getMousePos(window)
-	return { 0, 0 };
-}
-
-sf::Vector2i MouseHandler::getWorldPos(const sf::Vector2i& mousePos) const {
-	// TODO: return window->mapPixelToCoords(mousePos)
-	return mousePos;
-}
-
-bool MouseHandler::clickingPanels() {
-	// TODO: �������� ��������� ����� �� ControlPanel ��� InventoryPanel
-	// return m_context.m_cPanelPtr->inBounds(...)
-	//     || m_context.m_iPanelPtr->inBounds(...)
-	return false;
-}

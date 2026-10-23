@@ -1,136 +1,223 @@
 #include "main/animator.hpp"
+#include <cassert>
 #include <iostream>
-#include <algorithm>
-#include <optional>
 
-void Animator::loadAnimation(const std::string& textureName,
-	unsigned int frameCol, unsigned int frameRow) {
+Animator::Animator(sf::Sprite& sprite)
+	: m_sprite(sprite)
+	, m_currentAnimation(nullptr)
+	, m_stopAnimation(false)
+	, m_endAnim(false)
+	, m_currentDirection(Direction::Down)  // <-- Только тут
+{
+}
 
-	// 1. Формируем полный путь с учетом переименованной папки
-	std::string fullPath = "res/player/rlb" + textureName;
+Animator::Animation& Animator::createAnimation(std::string const& name,
+	unsigned int cols,
+	unsigned int rows,
+	float fps,
+	bool looping)
+{
+	// ЭТА СТРОКА создаёт новый объект в map, если его ещё нет,
+	// или возвращает ссылку на существующий, если ключ уже есть.
+	auto& anim = m_animations[name];
 
-	sf::Texture texture;
-	if (!texture.loadFromFile(fullPath)) {
-		std::cerr << "[ERROR] Failed to load texture: " << fullPath << "\n";
+	// Явно перезаписываем поля. Это гарантирует, что у каждой анимации
+	// будут свои значения, даже если объект уже существовал.
+	anim.m_name = name;
+	anim.m_cols = cols;
+	anim.m_rows = rows;
+	anim.m_fps = fps;          // <-- вот тут сохраняется fps для ЭТОЙ анимации
+	anim.m_looping = looping;
+
+	return anim;
+}
+
+
+void Animator::loadDirectionalAnimation(const std::string& name)
+{
+	auto it = m_animations.find(name);
+	if (it == m_animations.end()) {
+		std::cerr << "[Animator] Error: animation '" << name << "' not found!\n";
 		return;
 	}
 
-	sf::Vector2u texSize = texture.getSize();
-	sf::Vector2u frameSize{ texSize.x / frameCol, texSize.y / frameRow };
+	Animation& anim = it->second;
 
-	// Проверка на целостность (чтобы не было дробных пикселей)
-	if (frameSize.x == 0 || frameSize.y == 0) {
-		std::cerr << "[ERROR] Invalid frame size calculation.\n";
+	if (anim.m_cols == 0 || anim.m_framesStorage.empty()) {
+		std::cerr << "[Animator] Error: m_cols == 0 or m_framesStorage empty for '" << name << "'.\n";
 		return;
 	}
 
-	Animation anim;
-	anim.m_name = textureName; // Используем имя файла как имя анимации
-	anim.m_frameCol = frameCol;
-	anim.m_frameRow = frameRow;
-	anim.m_frameSize = frameSize;
-	// Длительность кадра: общее время анимации / кол-во кадров. 
-	// Для примера ставим 0.1 сек на кадр (10 FPS). Можно вынести в параметры.
-	anim.m_frameDuration = 0.1f;
+	// ЛОГИКА «ПЕРЕЗАГРУЗКИ»: чистим только направления для ЭТОЙ анимации
+	anim.m_directionalFrames.clear();
 
-	// 2. Нарезаем спрайт-лист на отдельные кадры
-	for (unsigned int r = 0; r < frameRow; ++r) {
-		for (unsigned int c = 0; c < frameCol; ++c) {
-			sf::Sprite sprite(texture);
+	const unsigned int cols = anim.m_cols;
+	const auto& fullStorage = anim.m_framesStorage;
+	constexpr int totalDirections = 8;
 
-			// Устанавливаем прямоугольник текстуры (нарезаем кадр)
-			sprite.setTextureRect(sf::IntRect(
-				static_cast<int>(c * frameSize.x),
-				static_cast<int>(r * frameSize.y),
-				static_cast<int>(frameSize.x),
-				static_cast<int>(frameSize.y)
-			));
+	for (int row = 0; row < totalDirections; ++row)
+	{
+		Direction dir = static_cast<Direction>(row);
+		std::vector<sf::IntRect> frames;
+		frames.reserve(cols);
 
-			// ВАЖНО: Если картинка без прозрачности (как на твоем скриншоте),
-			// белый фон будет виден. В идеале используй PNG с альфа-каналом.
-			// Если нужно программно убрать белый цвет, потребуется шейдер или 
-			// предварительная обработка текстуры (setMask).
+		size_t startIndex = row * cols;
+		for (unsigned int i = 0; i < cols; ++i)
+		{
+			if (startIndex + i < fullStorage.size())
+				frames.push_back(fullStorage[startIndex + i]);
+		}
+		anim.m_directionalFrames[dir] = std::move(frames);
+	}
 
-			anim.m_frames.push_back(sprite);
+	// !!! УБРАНО: Принудительная установка Down.
+	// Мы просто берём текущее направление игрока (m_currentDirection)
+	// и ставим ему соответствующий вектор кадров.
+
+	auto dirIt = anim.m_directionalFrames.find(m_currentDirection);
+	if (dirIt != anim.m_directionalFrames.end())
+	{
+		anim.m_frames = dirIt->second;
+	}
+	else
+	{
+		// Фоллбэк: если вдруг такого направления нет (редкий кейс), ставим Down
+		auto downIt = anim.m_directionalFrames.find(Direction::Down);
+		if (downIt != anim.m_directionalFrames.end())
+			anim.m_frames = downIt->second;
+	}
+
+	// Сброс таймера и кадра при смене анимации
+	m_elapsedTime = 0.0f;
+	m_currentFrame = 0;
+	m_endAnim = false;
+
+	switchAnimation(&anim);
+}
+
+
+
+// Метод установки направления : теперь это просто переключение указателя / вектора
+void Animator::setDirection(Direction dir)
+{
+	if (!m_currentAnimation) return;
+
+	m_currentDirection = dir;
+
+	auto it = m_currentAnimation->m_directionalFrames.find(dir);
+	if (it != m_currentAnimation->m_directionalFrames.end())
+	{
+		m_currentAnimation->m_frames = it->second;
+
+		// --- СБРОС ПРИ СМЕНЕ НАПРАВЛЕНИЯ ---
+		m_elapsedTime = 0.0f;      // сбрасываем таймер, чтобы не прыгнуть вперёд
+		m_currentFrame = 0;        // начинаем с первого кадра направления
+		m_endAnim = false;        // говорим, что анимация ещё не закончилась
+		// ----------------------------------
+	}
+}
+
+
+void Animator::switchAnimation(Animation* animation) {
+	if (!animation) {
+		m_currentAnimation = nullptr;
+		m_endAnim = true;
+		return;
+	}
+
+	m_currentAnimation = animation;
+	// Сбрасываем кадр при переключении анимации — чтобы анимация начиналась заново
+	m_elapsedTime = 0.0f;
+	m_currentFrame = 0;
+	m_endAnim = false;
+}
+
+bool Animator::switchAnimation(std::string const& name) {
+	auto it = m_animations.find(name);
+	if (it == m_animations.end()) {
+		return false;
+	}
+	switchAnimation(&it->second);
+	return true;
+}
+
+void Animator::update(sf::Time const& dT) {
+	if (!m_currentAnimation || m_stopAnimation) {
+		m_endAnim = true;
+		return;
+	}
+
+	const auto num_frames = static_cast<int>(m_currentAnimation->m_frames.size());
+	if (num_frames == 0) {
+		m_endAnim = true;
+		return;
+	}
+
+	m_elapsedTime += dT.asSeconds();
+
+	float framesPerSecond = m_currentAnimation->m_fps;
+	if (framesPerSecond <= 0.0f) framesPerSecond = 12.0f;
+
+	const float timePerFrame = 1.0f / framesPerSecond;
+
+	// ВАЖНО: меняем только ОДИН кадр за один тик, даже если времени прошло много.
+	// Это убирает «пропуск» кадров и мгновенный прыжок к концу.
+	if (m_elapsedTime >= timePerFrame) {
+		m_elapsedTime -= timePerFrame;
+		++m_currentFrame;
+
+		// Если анимация зациклена — просто делаем кольцо
+		if (m_currentAnimation->m_looping) {
+			if (m_currentFrame >= num_frames) {
+				m_currentFrame = 0;
+			}
+		}
+		else {
+			// Для НЕ зацикленной анимации: как только мы вышли за пределы кадров —
+			// останавливаемся на последнем и ставим флаг конца.
+			if (m_currentFrame >= num_frames) {
+				m_currentFrame = num_frames - 1;
+				m_endAnim = true;
+			}
+			else {
+				m_endAnim = false; // Анимация ещё идёт
+			}
 		}
 	}
 
-	m_animations.push_back(anim);
-	std::cout << "[INFO] Loaded animation '" << anim.m_name
-		<< "' with " << anim.m_frames.size() << " frames.\n";
+	// Отладочный вывод (оставляем как договаривались)
+	std::cout << "Anim: " << m_currentAnimation->m_name
+		<< " | Frame: " << m_currentFrame
+		<< (m_endAnim && !m_currentAnimation->m_looping ? "\n" : "\r");
+
+	m_sprite.setTextureRect(m_currentAnimation->m_frames[m_currentFrame]);
 }
 
-void Animator::update(sf::Time dt) {
-	if (m_stopAnimation || m_animations.empty()) return;
 
-	float deltaTime = dt.asSeconds();
-	m_elapsed += deltaTime;
 
-	const Animation& currentAnim = m_animations[m_currentAnim];
-
-	// Если прошло время одного кадра
-	if (m_elapsed >= currentAnim.m_frameDuration) {
-		m_elapsed -= currentAnim.m_frameDuration;
-
-		// Переключаем кадр
-		m_currentFrame++;
-
-		// Зацикливаем анимацию
-		if (m_currentFrame >= currentAnim.m_frames.size()) {
-			m_currentFrame = 0;
-		}
-	}
-}
-
-void Animator::draw(sf::RenderTarget& target, const sf::Vector2f& position) {
-	if (m_animations.empty()) return;
-
-	const Animation& currentAnim = m_animations[m_currentAnim];
-
-	// Рисуем текущий кадр
-	sf::Sprite& sprite = const_cast<sf::Sprite&>(currentAnim.m_frames[m_currentFrame]);
-	sprite.setPosition(position);
-
-	target.draw(sprite);
-}
-
-void Animator::switchAnimation(const std::string& name) {
-	auto idx = findAnimationIndex(name);
-	if (idx.has_value()) {
-		m_currentAnim = idx.value();
-		m_currentFrame = 0; // Сброс на первый кадр
-		m_elapsed = 0.f;
-		std::cout << "[INFO] Switched animation to: " << name << "\n";
-	}
-	else {
-		std::cerr << "[WARN] Animation '" << name << "' not found!\n";
-	}
-}
 
 std::string Animator::getCurrentAnimationName() const {
-	if (m_animations.empty()) return "";
-	return m_animations[m_currentAnim].m_name;
+	return m_currentAnimation ? m_currentAnimation->m_name : "";
 }
 
-unsigned int Animator::getCurrentFrame() const {
-	return m_currentFrame;
+void Animator::restart() {
+	m_elapsedTime = 0.0f;
+	m_currentFrame = 0;
+	m_endAnim = false;
 }
 
-sf::Vector2u Animator::getFrameSize() const {
-	if (m_animations.empty()) return { 0, 0 };
-	return m_animations[m_currentAnim].m_frameSize;
+bool Animator::getEndAnim() const {
+	return m_endAnim;
 }
 
-bool Animator::isStopped() const { return m_stopAnimation; }
-void Animator::setStopped(bool stopped) { m_stopAnimation = stopped; }
-
-
-std::optional<size_t> Animator::findAnimationIndex(const std::string& name) const {
-	for (size_t i = 0; i < m_animations.size(); ++i) {
-		if (m_animations[i].m_name == name) {
-			return i;
-		}
-	}
-	return std::nullopt;
+Animator::Animation* Animator::getCurrentAnimation() {
+	return m_currentAnimation;
 }
+
+int Animator::getCurrentFrame() const {
+	if (!m_currentAnimation) return 0;
+	const auto numFrames = static_cast<int>(m_currentAnimation->m_frames.size());
+	return (numFrames == 0) ? 0 : static_cast<int>(m_currentFrame);
+}
+
 

@@ -107,6 +107,27 @@ sf::Vector2f Player::getCenterEntity(int /*index*/) const {
 
 void Player::checkLevelUp() {}
 
+void Player::equipItem(Entity* item) {
+	if (!item) {
+		return; // Нельзя экипировать nullptr
+	}
+
+	EntityType type = item->getType();
+
+	// Получаем ссылку на нужный слот по типу
+	Entity*& targetSlot = getSlotForType(type);
+
+	// Меняем слот через универсальный сеттер
+	if (setEquipment(targetSlot, item)) {
+		// Триггер предзагрузки
+		//m_game->preloadWeaponPack(item->getAnimationType());
+
+		// Обновляем визуал (спрайт, анимацию)
+		//updateVisuals();
+	}
+}
+
+
 void Player::setupMessage(sf::Font /*font*/, sf::Text::Style /*style*/,
 	unsigned int /*size*/, sf::Color /*color*/) {}
 
@@ -163,11 +184,11 @@ void Player::update(sf::Time dt) {
 	updateMessages();
 }
 
-void Player::draw(sf::RenderTarget& target) {
+void Player::draw(sf::RenderTarget& target) const{
 	target.draw(m_sprite);
-	drawDebug(target);
+	//drawDebug(target);
 	// ИСПРАВЛЕНО: getViewport() без аргументов
-	drawMessages(target, target.getView().getViewport());
+	//drawMessages(target, target.getView().getViewport());
 }
 
 void Player::handleInput(sf::Time /*dt*/) {

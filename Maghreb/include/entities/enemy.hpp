@@ -13,7 +13,7 @@ public:
 	LootSystem& getLoot();
 
 	void update(sf::Time dt) override;
-	void draw(sf::RenderTarget& target) override;
+	void draw(sf::RenderTarget& target) const override;
 
 	// Поведение
 	void setAction();

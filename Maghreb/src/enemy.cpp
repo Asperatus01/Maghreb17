@@ -20,7 +20,7 @@ void Enemy::update(sf::Time dt) {
 	Character::update(dt);
 }
 
-void Enemy::draw(sf::RenderTarget& target) {
+void Enemy::draw(sf::RenderTarget& target) const{
 	Character::draw(target);
 }
 

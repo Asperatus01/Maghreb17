@@ -16,7 +16,7 @@ public:
 	// Компоненты
 	StatsComponent& getStats();
 	Equipment& getEquipment();
-	Animator& getAnimator();
+	bool setEquipment(Entity*& slot, Entity* newItem);
 	MovementController& getMovement();
 
 	// Боевой интерфейс
@@ -45,16 +45,25 @@ public:
 
 	// Жизненный цикл
 	void update(sf::Time dt) override;
-	void draw(sf::RenderTarget& target) override;
+	//void draw(sf::RenderTarget& target) override;
 
 	// Утилиты
 	int getRow() const;
 	int getCol() const;
 
+	// Доступ к анимации
+	// Переопределяем методы — они будут вызываться вместо базовых,
+	// если у нас есть указатель на Character
+	void activateAnimation(const std::string& name) override;
+	AnimationHolder* getAnimatorHolder() const override;
+
+	protected:
+	// Возвращает ссылку на нужный слот в Equipment по типу предмета
+	Entity*& getSlotForType(EntityType type);
+
 protected:
 	StatsComponent m_stats;
 	Equipment m_equipment;
-	Animator m_animator;
 	MovementController m_movement;
 
 	// Состояние
@@ -70,7 +79,7 @@ protected:
 	sf::FloatRect m_attackZone;
 
 	// Индекс цели
-	int m_indexEntity = 999;
+	int m_indexEntity = -1;
 
 	void updateInvincibilityTimer();
 	AnimationState getAnimationRating() const;

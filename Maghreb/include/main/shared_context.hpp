@@ -1,5 +1,6 @@
 // shared_context.hpp
 #pragma once
+#define DEBUG_DRAW_HITBOX  
 
 #include <SFML/Graphics.hpp>
 
@@ -16,14 +17,15 @@ class ControlPanel;
 class MouseHandler;
 class MusicPlayer;
 class SoundPlayer;
-//class AnimationHolder;
+class AnimationHolder;
 class Inventory;
 class InventoryPanel;
 
 class SharedContext {
 public:
 	SharedContext()
-		: m_windPtr(nullptr)
+		: m_windowPtr(nullptr)
+		, m_view(nullptr)
 		, m_tileManagerPtr(nullptr)
 		, m_eventManagerPtr(nullptr)
 		//, m_stateManagerPtr(nullptr)
@@ -37,17 +39,18 @@ public:
 		, m_mouseHandlerPtr(nullptr)
 		, m_musicPlayerPtr(nullptr)
 		, m_soundPlayerPtr(nullptr)
-		//, m_animHolderPtr(nullptr)
+		, m_animHolderPtr(nullptr)
+		, m_itemAnimHolderPtr(nullptr)
 		, m_renderWindowPtr(nullptr)
-		, m_debug(false)
+		, m_debugMode(false)
 		, m_currentMap(0)
 		, m_maxMap(10) {}
 
 	// Ќ≈владеющие указатели (сырые): SharedContext не владеет объектами,
 	// он только хранит ссылки на них. ”далением занимаетс€ Game.
-	Window*                  m_windPtr;
+	Window*                  m_windowPtr;
 	sf::RenderWindow*        m_renderWindowPtr;      // Ќ≈владеющий указатель на RenderWindow внутри Window
-
+	sf::View*                m_view = nullptr;
 	TileManager*             m_tileManagerPtr;
 	EventManager*            m_eventManagerPtr;
 	//StateManager*           m_stateManagerPtr;
@@ -61,10 +64,16 @@ public:
 	MouseHandler*            m_mouseHandlerPtr;
 	MusicPlayer*             m_musicPlayerPtr;
 	SoundPlayer*             m_soundPlayerPtr;
-	//AnimationHolder*         m_animHolderPtr;
+	AnimationHolder*         m_animHolderPtr;
+	AnimationHolder*         m_itemAnimHolderPtr; // отдельный экземпл€р дл€ предметов
+
+
+	void toggleDebugMode() {
+		m_debugMode = !m_debugMode;
+	}
 
 	// ѕубличные флаги и счЄтчики (дл€ удобства доступа без геттеров в прототипе)
-	bool m_debug;
+	mutable bool m_debugMode;
 	int  m_currentMap;
 	int  m_maxMap;
 };
